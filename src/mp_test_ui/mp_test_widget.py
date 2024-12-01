@@ -9,7 +9,7 @@ from python_qt_binding import loadUi
 from python_qt_binding.QtCore import Qt
 from python_qt_binding.QtCore import QTimer, QPointF
 from python_qt_binding.QtGui import QKeySequence, QBrush, QColor, QPainter
-from python_qt_binding.QtWidgets import QShortcut
+from python_qt_binding.QtWidgets import QShortcut, QTableWidgetItem
 from python_qt_binding.QtWidgets import QWidget, QGraphicsView, QGraphicsScene, QGraphicsEllipseItem
 import rclpy
 from rclpy.qos import QoSProfile
@@ -46,6 +46,11 @@ class MpTestWidget(QWidget):
         self.ax.set_xlabel('X Coordinate')
         self.ax.set_ylabel('Y Coordinate')
 
+        # QTimer로 일정 주기로 로봇의 위치 업데이트
+        self.timer = QTimer(self)
+        self.timer.timeout.connect(self.UpdateTab)
+        self.timer.start(1000)  # 1초마다 업데이트
+
         # 로봇 위치를 표시할 선/포인트 삭제 변수
         self.current_plot = None
 
@@ -65,9 +70,25 @@ class MpTestWidget(QWidget):
         self.pose = msg
         # 처음 정보 받는 swarm_info를 이용하여 그래프에 띄우자
         # 콜백함수는 정보만 업데이트하고 QTimer 이용해서 일정 주기로 업데이트하는 방식도 괜찮을듯
-        if(self.current_plot!=None):
-            self.current_plot.remove()
-
+        
         x, y = self.pose.position.x , self.pose.position.y
-        self.current_plot, = self.ax.plot(x, y, 'bo')  # 'bo'는 파란색 원을 표시
+        # self.current_plot = self.ax.scatter(x, y, color='blue', s=100)  # 마커
+        if(self.current_plot!=None):
+            self.current_plot.set_position((x,y))
+        else:
+            self.current_plot = self.ax.text(x, y, '1', color='white', ha='center', va='center', fontsize=10, 
+                    bbox=dict(facecolor='blue', edgecolor='none', boxstyle='circle'))  # 마커 안의 숫자
         self.canvas.draw()  # canvas 업데이트
+
+    def UpdateTab(self):
+        x, y = self.pose.position.x , self.pose.position.y
+        # table 설정
+        self.robot_table.setRowCount(1)     # 행 개수 설정
+        self.robot_table.setColumnCount(2)  # 열 개수 설정
+        self.robot_table.setItem(0,0,QTableWidgetItem(str(x)))
+        self.robot_table.setItem(0,1,QTableWidgetItem(str(y)))
+
+        self.group_table.setRowCount(1)
+        self.group_table.setColumnCount(2)
+        self.group_table.setItem(0,0,QTableWidgetItem(str(x)))
+        self.group_table.setItem(0,1,QTableWidgetItem(str(y)))
