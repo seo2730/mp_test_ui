@@ -6,32 +6,114 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1103</width>
-    <height>771</height>
+    <width>1899</width>
+    <height>1024</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <widget class="QTableWidget" name="tableWidget">
+  <widget class="QTabWidget" name="swarm_info_tab">
    <property name="geometry">
     <rect>
-     <x>440</x>
+     <x>870</x>
      <y>10</y>
-     <width>651</width>
-     <height>571</height>
+     <width>491</width>
+     <height>1011</height>
     </rect>
    </property>
+   <property name="currentIndex">
+    <number>0</number>
+   </property>
+   <widget class="QWidget" name="robot_info_tab">
+    <attribute name="title">
+     <string>로봇 정보</string>
+    </attribute>
+    <widget class="QTableWidget" name="robot_table">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>0</y>
+       <width>491</width>
+       <height>991</height>
+      </rect>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QWidget" name="group_info_tab">
+    <attribute name="title">
+     <string>그룹 정보</string>
+    </attribute>
+    <widget class="QTableWidget" name="group_table">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>0</y>
+       <width>1041</width>
+       <height>981</height>
+      </rect>
+     </property>
+    </widget>
+   </widget>
   </widget>
-  <widget class="QGraphicsView" name="graphicsView">
+  <widget class="QTabWidget" name="mp_info_tab_2">
+   <property name="geometry">
+    <rect>
+     <x>1380</x>
+     <y>10</y>
+     <width>491</width>
+     <height>1011</height>
+    </rect>
+   </property>
+   <property name="currentIndex">
+    <number>0</number>
+   </property>
+   <widget class="QWidget" name="robot_mp_tab">
+    <attribute name="title">
+     <string>예비대 임무계획</string>
+    </attribute>
+    <widget class="QTableWidget" name="robot_table_2">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>0</y>
+       <width>491</width>
+       <height>991</height>
+      </rect>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QWidget" name="group_mp_tab">
+    <attribute name="title">
+     <string>그룹 임무계획</string>
+    </attribute>
+    <widget class="QTableWidget" name="group_table_2">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>0</y>
+       <width>1041</width>
+       <height>981</height>
+      </rect>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QWidget" name="flowchart_tab">
+    <attribute name="title">
+     <string>플로우 차트</string>
+    </attribute>
+   </widget>
+  </widget>
+  <widget class="QWidget" name="verticalLayoutWidget">
    <property name="geometry">
     <rect>
      <x>10</x>
      <y>10</y>
-     <width>421</width>
-     <height>571</height>
+     <width>851</width>
+     <height>1011</height>
     </rect>
    </property>
+   <layout class="QVBoxLayout" name="plotLayout"/>
   </widget>
  </widget>
  <resources/>
