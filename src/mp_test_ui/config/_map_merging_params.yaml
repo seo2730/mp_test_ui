@@ -1,0 +1,29 @@
+map_merge:
+  ros__parameters:
+    merging_rate: 0.1 # 4
+    discovery_rate: 0.05
+    estimation_rate: 0.5
+    estimation_confidence: 0.6
+    robot_map_topic: /map
+    robot_map_updates_topic: /map_updates
+    robot_namespace: ""
+    merged_map_topic: /merged_map
+    world_frame: odom
+    known_init_poses: true
+    # known_init_poses: false
+
+    # Define here robots' positions in the map if known_init_poses is true
+    /group1/map_merge/init_pose_x: 30.0
+    /group1/map_merge/init_pose_y: 0.5
+    /group1/map_merge/init_pose_z: 0.0
+    /group1/map_merge/init_pose_yaw: 0.00
+
+    /group2/map_merge/init_pose_x: 0.5
+    /group2/map_merge/init_pose_y: -0.5
+    /group2/map_merge/init_pose_z: 0.0
+    /group2/map_merge/init_pose_yaw: 0.00
+
+    /group3/map_merge/init_pose_x: -0.5
+    /group3/map_merge/init_pose_y: -0.5
+    /group3/map_merge/init_pose_z: 0.0
+    /group3/map_merge/init_pose_yaw: 0.00

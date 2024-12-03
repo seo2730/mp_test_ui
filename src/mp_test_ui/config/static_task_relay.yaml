@@ -1,0 +1,17 @@
+maneuver_performance:
+  # 평균 속도
+  mean_ground_velocity: 0.5
+
+# 작전 지속 성능 파라미터
+operation_persistence_performance:
+  # 배터리 사양
+  battery_spec: 0.6
+  # 전비 (=연비)
+  electronic_efficiency: 0.7
+
+# 감시 정찰 파라미터
+observation_recon:
+  # 통신거리
+  communication_distance: 1
+  # 통신세기
+  communication_power: 1

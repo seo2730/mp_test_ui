@@ -9,6 +9,11 @@
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
+  <depend>mgs02_base</depend>
+  <depend>mgs04_base_msgs</depend>
+  <depend>mgs05_base_msgs</depend>
+  <depend>mgs05_mp_msgs</depend>
+
   <exec_depend>geometry_msgs</exec_depend>
   <exec_depend>python_qt_binding</exec_depend>
   <exec_depend>python3-catkin-pkg-modules</exec_depend>

@@ -1,0 +1,42 @@
+# 0 : 변하지 않는 요소
+# 1 : 변하는 요소 -> 평균이 필요한 경우
+# 2 : 변하는 요소 -> 평균이 필요하지 않는 경우
+
+# 기동 성능 파라미터
+maneuver_performance:
+  # 평균 속도
+  mean_ground_velocity: 0
+  # 최대 속도
+  max_ground_velocity: 0
+  # 비행 평균 속도
+  mean_fight_velocity: 0
+  # 비행 최대 속도
+  max_fight_velocity: 0
+  # 도약 여부
+  jumping: 0
+  # 벽 부착 여부
+  wall_stick: 0
+
+# 작전 지속 성능 파라미터
+operation_persistence_performance:
+  # 이동 가능성
+  moving_able: 1
+  # # 과업수행시간
+  # task_runnig_time: 2
+  # # 과업 진척도
+  # task_progress: 2
+  # # 운용자 과업 고정 여부
+  # oc_task_fixed_check: 2
+  
+# 감시 정찰 파라미터
+observation_recon:
+  # 감시 거리
+  observation_distance: 0
+  # FOV
+  FOV: 0
+  # 통신거리
+  communication_distance: 0
+  # 통신세기
+  communication_power: 0
+  # 구성원 개수
+  member_num: 2

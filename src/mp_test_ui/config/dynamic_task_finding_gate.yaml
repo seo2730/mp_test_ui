@@ -1,0 +1,10 @@
+# 기동 성능 파라미터
+maneuver_performance:
+  # 최대 속도
+  max_ground_velocity: 0.7
+  # 비행 최대 속도
+  max_fight_velocity: 0
+  # 도약 여부
+  jumping: 0
+  # 벽 부착 여부
+  wall_stick: 0

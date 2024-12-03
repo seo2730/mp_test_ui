@@ -1,0 +1,11 @@
+# 기동 성능 파라미터
+maneuver_performance:
+  # 벽 부착 여부
+  wall_stick: 0.1
+
+# 감시 정찰 파라미터
+observation_recon:
+  # 감시 거리
+  observation_distance: 1
+  # FOV
+  FOV: 1

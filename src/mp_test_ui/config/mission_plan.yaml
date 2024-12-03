@@ -1,0 +1,56 @@
+#임무정의
+
+#과업이름 
+# Move : 이동감시
+# Fix : 고정감시
+# Mapping : 지도작성
+# FindGate : 진입로찾기  
+# Relay : 통신중계
+
+#정찰
+RECONNAISSANCE: {
+  Watch: {
+    operator: "<=",
+    value: 30
+    }, #판단 조건 값
+  Task: {
+    IFTaskList: [
+      "FindGate"
+      ],
+    ELSETaskList: [
+      "FindGate"
+      ]
+    }
+  }
+
+
+#감시
+SURVEILLANCE: {
+  Watch: {
+    operator: "<",
+    value: 20
+    }, #판단 조건 값
+  Task: {
+    IFTaskList: [
+      "Move"
+      ],
+    ELSETaskList: [
+      "Move"
+      ]
+    }
+  }
+
+#Formation 종류
+# LINE : 일자
+# NEMO : 네모
+# SEMO : 세모
+# DIAMOND : 다이아몬드
+
+#과업별 Formation Set
+Formation: {
+  Move: "LINE",
+  Fix: "LINE",
+  Mapping: "LINE",
+  FindGate: "LINE",
+  Relay: "LINE"
+}

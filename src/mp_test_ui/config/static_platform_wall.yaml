@@ -1,0 +1,33 @@
+# 기동 성능 파라미터
+maneuver_performance:
+  # 평균 속도
+  mean_ground_velocity: 0.05
+  # 최대 속도
+  max_ground_velocity: 0.02
+  # 비행 평균 속도
+  mean_fight_velocity: 0.75
+  # 비행 최대 속도
+  max_fight_velocity: 0.17
+  # 도약 여부
+  jumping: 0
+  # 벽 부착 여부
+  wall_stick: 1.0
+
+# 작전 지속 성능 파라미터
+operation_persistence_performance:
+  # 배터리 사양
+  battery_spec: 0.5
+  # 전비 (=연비)
+  electronic_efficiency: 0.6
+
+# 감시 정찰 파라미터
+observation_recon:
+  # 감시 거리
+  observation_distance: 1.0
+  # FOV
+  FOV: 1.0
+  # 통신거리
+  communication_distance: 1.0
+  # 통신세기
+  communication_power: 1.0
+

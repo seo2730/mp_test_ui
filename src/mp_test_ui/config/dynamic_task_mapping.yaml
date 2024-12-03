@@ -1,0 +1,22 @@
+# 기동 성능 파라미터
+maneuver_performance:
+  # 평균 속도
+  mean_ground_velocity: 0.7
+  # 벽 부착 여부
+  wall_stick: 0
+
+# 작전 지속 성능 파라미터
+operation_persistence_performance:
+  # 배터리 사양
+  moving_able: 0.5
+
+# 감시 정찰 파라미터
+observation_recon:
+  # 감시 거리
+  observation_distance: 1
+  # FOV
+  FOV: 1
+  # 구성원 개수
+  member_num: 0.6
+
+  
