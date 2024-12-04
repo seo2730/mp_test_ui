@@ -10,7 +10,7 @@ from python_qt_binding import loadUi
 from python_qt_binding.QtCore import Qt
 from python_qt_binding.QtCore import QTimer, QPointF
 from python_qt_binding.QtGui import QKeySequence, QBrush, QColor, QPainter, QStandardItemModel, QStandardItem
-from python_qt_binding.QtWidgets import QShortcut, QTableWidgetItem, QTreeView, QVBoxLayout, QTableWidget
+from python_qt_binding.QtWidgets import QShortcut, QTableWidgetItem, QTreeView, QVBoxLayout, QTableWidget, QTabWidget
 from python_qt_binding.QtWidgets import QWidget, QGraphicsView, QGraphicsScene, QGraphicsEllipseItem
 import rclpy
 from rclpy.qos import QoSProfile, ReliabilityPolicy
@@ -115,8 +115,9 @@ class MpTestWidget(QWidget):
         self.sub_robots_performance_value = self.node.create_subscription(RobotPerformValues, "/robots_performance_value", self.GetRobotPerformanceValue, best_effort)
         self.sub_robots_type_num = self.node.create_subscription(RobotTypeNums, "/robot_type_num", self.GetRobotTypeNum, best_effort)
         self.sub_groups_performance_value = self.node.create_subscription(RobotTypeNums, "/groups_performance_value", self.GetGroupPerformanceValue, best_effort)
-
         ####################
+
+        self.tasks_table.cellClicked.connect(self.OnTasksTableRowClicked)
 
     # 정적임무계획 수신
     def GetStaticMissionPlan(self, msg):
@@ -154,39 +155,57 @@ class MpTestWidget(QWidget):
             self.robot_plan_table.setItem(rol,1,QTableWidgetItem(str(robot_peform_value.performance_value)))
             rol += 1
 
-        self.task_requirement_tab.clear()
+        self.tasks_table.clear()
+        self.tasks_table.setRowCount(len(msg.plans))
+        
         num_task =0
         for plan in msg.plans:
             task_name_kor, task_name_eng = self.TaskName(plan.task[0].task_name)
-            file=os.path.join('/config',"static_task_"+task_name_eng+".yaml")
-            config = yaml.safe_load(file)
+            print(task_name_kor + ", " + task_name_eng)
+            current_directory = os.getcwd()
+            print(current_directory)
+            file_path=os.path.join('src/mp_test_ui/src/mp_test_ui/config',"static_task_"+task_name_eng+".yaml")
+            if os.path.isfile(file_path):
+                print("File Exist")
+                with open(file_path) as file:
+                    config = yaml.load(file, Loader=yaml.FullLoader)
 
-            new_tab = QWidget()
-            layout = QVBoxLayout(new_tab)
-            new_tab.setLayout(layout)
-            table_widget = QTableWidget()
+                param_name_set = []
+                param_name_set.append("과업명")
+                param_name_dict = {}
+                param_name_dict["과업명"] = task_name_kor
+                for performance_param in self.task_perform_name:
+                    print(performance_param)
+                    if performance_param in config:
+                        print(config[performance_param])
+                        for param_key, param_value in config[performance_param].items():
+                            # print(param_key)
+                            param_name = self.TaskParamName(param_key)
+                            # print(param_name)
+                            param_name_dict[param_name] = param_value
+                            param_name_set.append(param_name)
+                    else:
+                        print("No requirement")
+                        continue
 
-            self.task_requirement_tab
-
-            param_name_dict = {}
-            for performance_param in self.task_perform_name:
-                if performance_param in config:
-                    for param_key, param_value in config[performance_param].item():
-                        param_name = self.TaskParamName(param_key)
-                        param_name_dict[param_name] = param_value
-
-                else:
-                    continue
-
-            table_widget.setRowCount(len(param_name_dict))
-            # table_widget.setHorizontalHeaderLabels(param_name_dict.keys)
-            col = 0
-            for key, value in param_name_dict:
-                table_widget.setItem(0,col, QTableWidgetItem(str(value)))
-                col += 1
-            layout.addWidget(table_widget)
-            num_task +=1
-            self.task_requirement_tab.addTab(new_tab,"과업_"+str(num_task))
+                print(param_name_dict)
+                self.tasks_table.setColumnCount(len(param_name_set))
+                self.tasks_table.setHorizontalHeaderLabels(param_name_set)
+                col = 0
+                for key, value in param_name_dict.items():
+                    print(key)
+                    self.tasks_table.setItem(num_task,col, QTableWidgetItem(str(value)))
+                    print(col)
+                    col += 1
+                    print("@@@ TEST 222 @@@")
+                # layout.addWidget(table_widget)
+                print("@@@ TEST 111 @@@")
+                # self.task_requirement_tab.addTab(table_widget,"과업_"+str(num_task))
+                num_task+=1
+                print("@@@ END @@@")
+            else:
+                print("No File Exist")
+                continue
 
     # 그룹 성능값 수신
     def GetGroupPerformanceValue(self, msg):
@@ -198,9 +217,6 @@ class MpTestWidget(QWidget):
         rol = 0
         for group_peform_value in msg.robot_values:
             pass
-
-
-
 
     # swarm info 값 QTimer로 업데이트
     def UpdateSwarmInfo(self):
@@ -362,7 +378,7 @@ class MpTestWidget(QWidget):
         elif task_name==5:
             return "통신 중계", "relay"
         else:
-            return "없는 과업"
+            return "없는 과업", "no_task"
 
     def TaskParamName(self, param_name):
         if param_name=="mean_ground_velocity":
@@ -391,4 +407,7 @@ class MpTestWidget(QWidget):
             return "통신 세기"
         else:
             return "없는 과업"
-
+        
+    def OnTasksTableRowClicked(self, row, col):
+        # clicked_data = self.tasks_table.item(row, 0).text()
+        print(str(row) + " Row Clicked")
