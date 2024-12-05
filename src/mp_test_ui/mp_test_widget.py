@@ -3,7 +3,7 @@ import os
 
 from ament_index_python.resources import get_resource
 ### 시험용 SW ICD ###
-from mgs05_mp_msgs.msg import RobotPerformValues, RobotTypeNums, GroupPerformValues
+from mgs05_mp_msgs.msg import RobotPerformValues, RobotTypeNums, GroupPerformValues, MpTestStatic
 from mgs05_base_msgs.msg import SwarmInfo, Rect, DynamicCustomPlan, Plans
 ####################
 from python_qt_binding import loadUi
@@ -83,7 +83,7 @@ class MpTestWidget(QWidget):
         # 과업 요구사항 트리 설정
         self.task_perform_name = ["maneuver_performance", "operation_persistence_performance", "observation_recon"]
 
-        self.first=False
+        self.former_row=None
 
         # QOS
         best_effort=QoSProfile(reliability=ReliabilityPolicy.BEST_EFFORT, depth=10)
@@ -106,15 +106,18 @@ class MpTestWidget(QWidget):
         # 그룹 성능값
         self.group_perform_values = GroupPerformValues()
 
+        self.mp_plan={}
+
         ### 왜 통신 문제가 생기는겨????
         # self.sub_static_mission_plan = self.node.create_subscription(Plans, "/mission_order_r",self.GetStaticMissionPlan, best_effort)
         ###
         self.sub_dynamic_mission_plan = self.node.create_subscription(DynamicCustomPlan, "/dynamic_mission_change",self.GetDynamicMissionPlan, best_effort)
         self.sub_swarm_info = self.node.create_subscription(SwarmInfo, "/swarm_info",self.GetSwarmInfo, best_effort)
         self.sub_rect = self.node.create_subscription(Rect,"/mission_range",self.GetMissionRange, reliable)
-        self.sub_robots_performance_value = self.node.create_subscription(RobotPerformValues, "/robots_performance_value", self.GetRobotPerformanceValue, best_effort)
-        self.sub_robots_type_num = self.node.create_subscription(RobotTypeNums, "/robot_type_num", self.GetRobotTypeNum, best_effort)
+        # self.sub_robots_performance_value = self.node.create_subscription(RobotPerformValues, "/robots_performance_value", self.GetRobotPerformanceValue, best_effort)
+        # self.sub_robots_type_num = self.node.create_subscription(RobotTypeNums, "/robot_type_num", self.GetRobotTypeNum, best_effort)
         self.sub_groups_performance_value = self.node.create_subscription(RobotTypeNums, "/groups_performance_value", self.GetGroupPerformanceValue, best_effort)
+        self.sub_mp_test_static = self.node.create_subscription(MpTestStatic, "/mp_test_static", self.GetRobotPerformanceValue, best_effort)
         ####################
 
         self.tasks_table.cellClicked.connect(self.OnTasksTableRowClicked)
@@ -157,13 +160,12 @@ class MpTestWidget(QWidget):
 
         self.tasks_table.clear()
         self.tasks_table.setRowCount(len(msg.plans))
-        
+
         num_task =0
+        self.mp_plan.clear()
         for plan in msg.plans:
             task_name_kor, task_name_eng = self.TaskName(plan.task[0].task_name)
             print(task_name_kor + ", " + task_name_eng)
-            current_directory = os.getcwd()
-            print(current_directory)
             file_path=os.path.join('src/mp_test_ui/src/mp_test_ui/config',"static_task_"+task_name_eng+".yaml")
             if os.path.isfile(file_path):
                 print("File Exist")
@@ -179,30 +181,23 @@ class MpTestWidget(QWidget):
                     if performance_param in config:
                         print(config[performance_param])
                         for param_key, param_value in config[performance_param].items():
-                            # print(param_key)
                             param_name = self.TaskParamName(param_key)
-                            # print(param_name)
                             param_name_dict[param_name] = param_value
                             param_name_set.append(param_name)
                     else:
                         print("No requirement")
                         continue
 
-                print(param_name_dict)
-                self.tasks_table.setColumnCount(len(param_name_set))
-                self.tasks_table.setHorizontalHeaderLabels(param_name_set)
-                col = 0
-                for key, value in param_name_dict.items():
-                    print(key)
-                    self.tasks_table.setItem(num_task,col, QTableWidgetItem(str(value)))
-                    print(col)
-                    col += 1
-                    print("@@@ TEST 222 @@@")
-                # layout.addWidget(table_widget)
-                print("@@@ TEST 111 @@@")
-                # self.task_requirement_tab.addTab(table_widget,"과업_"+str(num_task))
+                # print(param_name_dict)
+                param_name_dict["group"] = plan.groups
+                self.mp_plan["정적_과업_"+str(num_task)]=param_name_dict
+                self.tasks_table.setColumnCount(1)
+                self.tasks_table.setHorizontalHeaderLabels(["과업명"])
+
+                for key, value in self.mp_plan.items():
+                    self.tasks_table.setItem(num_task,0, QTableWidgetItem(str(value["과업명"])))
+
                 num_task+=1
-                print("@@@ END @@@")
             else:
                 print("No File Exist")
                 continue
@@ -407,7 +402,26 @@ class MpTestWidget(QWidget):
             return "통신 세기"
         else:
             return "없는 과업"
-        
+
     def OnTasksTableRowClicked(self, row, col):
         # clicked_data = self.tasks_table.item(row, 0).text()
         print(str(row) + " Row Clicked")
+        if self.former_row is not None:
+            self.tasks_table.item(self.former_row,0).setBackground(QColor(255,255,255))
+        self.former_row = row
+        for i in range(self.tasks_table.columnCount(),0,-1):
+            self.tasks_table.removeColumn(i)
+        self.tasks_table.item(row,0).setBackground(QColor(255,192,203))
+        if "정적_과업_0" in self.mp_plan:
+            for key, value in self.mp_plan["정적_과업_"+str(row)].items():
+                if key == '과업명' or key == 'group':
+                    continue
+                else:
+                    print(key)
+                    self.tasks_table.insertColumn(self.tasks_table.columnCount())
+                    self.tasks_table.setHorizontalHeaderItem(self.tasks_table.columnCount()-1,QTableWidgetItem(key))
+                    self.tasks_table.setItem(row,self.tasks_table.columnCount()-1,QTableWidgetItem(str(value)))
+                    self.tasks_table.item(row,self.tasks_table.columnCount()-1).setBackground(QColor(255,192,203))
+
+        elif "동적_과업_0" in self.mp_plan:
+            pass
