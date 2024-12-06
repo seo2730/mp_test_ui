@@ -3,7 +3,7 @@ import os
 
 from ament_index_python.resources import get_resource
 ### 시험용 SW ICD ###
-from mgs05_mp_msgs.msg import RobotPerformValues, RobotTypeNums, GroupPerformValues, MpTestStatic
+from mgs05_mp_msgs.msg import RobotPerformValues, RobotTypeNums, GroupPerformValues, MpTestStatic, MpTestDynamic
 from mgs05_base_msgs.msg import SwarmInfo, Rect, DynamicCustomPlan, Plans
 ####################
 from python_qt_binding import loadUi
@@ -56,6 +56,11 @@ class MpTestWidget(QWidget):
 
         # 로봇 위치를 표시할 선/포인트 삭제 변수
         self.current_plot = {}
+        self.task_plot = {}
+
+        self.robot_table_color={}
+        self.dynamic_robot_plan_color={}
+        self.dynamic_group_plan_color={}
 
         # 표 설정
         self.max_id = 0
@@ -107,6 +112,8 @@ class MpTestWidget(QWidget):
         self.group_perform_values = GroupPerformValues()
 
         self.mp_plan={}
+        self.mp_test_static={}
+        self.mp_test_dynamic={}
 
         ### 왜 통신 문제가 생기는겨????
         # self.sub_static_mission_plan = self.node.create_subscription(Plans, "/mission_order_r",self.GetStaticMissionPlan, best_effort)
@@ -114,9 +121,7 @@ class MpTestWidget(QWidget):
         self.sub_dynamic_mission_plan = self.node.create_subscription(DynamicCustomPlan, "/dynamic_mission_change",self.GetDynamicMissionPlan, best_effort)
         self.sub_swarm_info = self.node.create_subscription(SwarmInfo, "/swarm_info",self.GetSwarmInfo, best_effort)
         self.sub_rect = self.node.create_subscription(Rect,"/mission_range",self.GetMissionRange, reliable)
-        # self.sub_robots_performance_value = self.node.create_subscription(RobotPerformValues, "/robots_performance_value", self.GetRobotPerformanceValue, best_effort)
-        # self.sub_robots_type_num = self.node.create_subscription(RobotTypeNums, "/robot_type_num", self.GetRobotTypeNum, best_effort)
-        self.sub_groups_performance_value = self.node.create_subscription(RobotTypeNums, "/groups_performance_value", self.GetGroupPerformanceValue, best_effort)
+        self.sub_groups_performance_value = self.node.create_subscription(MpTestDynamic, "/mp_test_dynamic", self.GetGroupPerformanceValue, best_effort)
         self.sub_mp_test_static = self.node.create_subscription(MpTestStatic, "/mp_test_static", self.GetRobotPerformanceValue, best_effort)
         ####################
 
@@ -136,11 +141,6 @@ class MpTestWidget(QWidget):
     def GetSwarmInfo(self, msg):
         self.swarm_info = msg
 
-    # 타입 구성별 개수 수신
-    def GetRobotTypeNum(self, msg):
-        print("@@@ Get Robot Type Num @@@")
-        self.robots_type_num = msg
-
     # 임무 범위 수신
     def GetMissionRange(self,msg):
         self.mission_range = msg
@@ -148,24 +148,14 @@ class MpTestWidget(QWidget):
     # 로봇 성능값 수신
     def GetRobotPerformanceValue(self, msg):
         print("@@@ Get Robot Performance Value @@@")
-        robot_plan_table_name = ['로봇 ID', '성능값']
-        self.robot_plan_table.setRowCount(len(msg.robot_values))
-        self.robot_plan_table.setColumnCount(2)
-        self.robot_plan_table.setHorizontalHeaderLabels(robot_plan_table_name)
-        rol = 0
-        for robot_peform_value in msg.robot_values:
-            self.robot_plan_table.setItem(rol,0,QTableWidgetItem(str(robot_peform_value.robot_id%100)))
-            self.robot_plan_table.setItem(rol,1,QTableWidgetItem(str(robot_peform_value.performance_value)))
-            rol += 1
-
-        self.tasks_table.clear()
-        self.tasks_table.setRowCount(len(msg.plans))
-
-        num_task =0
+        num_task=0
         self.mp_plan.clear()
-        for plan in msg.plans:
-            task_name_kor, task_name_eng = self.TaskName(plan.task[0].task_name)
-            print(task_name_kor + ", " + task_name_eng)
+        self.mp_test_static.clear()
+        self.tasks_table.clear()
+        self.tasks_table.setRowCount(len(msg.mp_test_static))
+        for static_plan in msg.mp_test_static:
+            self.mp_test_static["정적_과업_"+str(num_task)] = [static_plan.robot_values, static_plan.robot_type_nums,static_plan.plan]
+            task_name_kor, task_name_eng = self.TaskName(static_plan.plan.task[0].task_name)
             file_path=os.path.join('src/mp_test_ui/src/mp_test_ui/config',"static_task_"+task_name_eng+".yaml")
             if os.path.isfile(file_path):
                 print("File Exist")
@@ -189,7 +179,7 @@ class MpTestWidget(QWidget):
                         continue
 
                 # print(param_name_dict)
-                param_name_dict["group"] = plan.groups
+                param_name_dict["group"] = static_plan.plan.groups
                 self.mp_plan["정적_과업_"+str(num_task)]=param_name_dict
                 self.tasks_table.setColumnCount(1)
                 self.tasks_table.setHorizontalHeaderLabels(["과업명"])
@@ -198,6 +188,7 @@ class MpTestWidget(QWidget):
                     self.tasks_table.setItem(num_task,0, QTableWidgetItem(str(value["과업명"])))
 
                 num_task+=1
+                print("@@@ END @@@")
             else:
                 print("No File Exist")
                 continue
@@ -205,13 +196,50 @@ class MpTestWidget(QWidget):
     # 그룹 성능값 수신
     def GetGroupPerformanceValue(self, msg):
         print("@@@ Get Group Performance Value @@@")
-        group_plan_table_name = ['그룹 ID', '리더 ID', '성능값']
-        self.group_plan_table.setRowCount(len(msg.robot_values))
-        self.group_plan_table.setColumnCount(2)
-        self.group_plan_table.setHorizontalHeaderLabels(group_plan_table_name)
-        rol = 0
-        for group_peform_value in msg.robot_values:
-            pass
+        num_task=0
+        self.mp_plan.clear()
+        self.mp_test_dynamic.clear()
+        self.tasks_table.clear()
+        self.tasks_table.setRowCount(len(msg.mp_test_dynamic))
+        for dynamic_plan in msg.mp_test_dynamic:
+            self.mp_test_dynamic["동적_과업_"+str(num_task)] = [dynamic_plan.group_values, dynamic_plan.robot_values, dynamic_plan.robot_type_nums, dynamic_plan.plan]
+            task_name_kor, task_name_eng = self.TaskName(dynamic_plan.plan.task[0].task_name)
+            file_path=os.path.join('src/mp_test_ui/src/mp_test_ui/config',"dynamic_task_"+task_name_eng+".yaml")
+            if os.path.isfile(file_path):
+                print("Dynamic File Exist")
+                with open(file_path) as file:
+                    config = yaml.load(file, Loader=yaml.FullLoader)
+
+                param_name_set = []
+                param_name_set.append("과업명")
+                param_name_dict = {}
+                param_name_dict["과업명"] = task_name_kor
+                for performance_param in self.task_perform_name:
+                    print(performance_param)
+                    if performance_param in config:
+                        print(config[performance_param])
+                        for param_key, param_value in config[performance_param].items():
+                            param_name = self.TaskParamName(param_key)
+                            param_name_dict[param_name] = param_value
+                            param_name_set.append(param_name)
+                    else:
+                        print("No requirement")
+                        continue
+
+                # # print(param_name_dict)
+                param_name_dict["group"] = dynamic_plan.plan.groups
+                self.mp_plan["동적_과업_"+str(num_task)]=param_name_dict
+                self.tasks_table.setColumnCount(1)
+                self.tasks_table.setHorizontalHeaderLabels(["과업명"])
+
+                for key, value in self.mp_plan.items():
+                    self.tasks_table.setItem(num_task,0, QTableWidgetItem(str(value["과업명"])))
+
+                num_task+=1
+                print("@@@ Dynamic END @@@")
+            else:
+                print("No File Exist")
+                continue
 
     # swarm info 값 QTimer로 업데이트
     def UpdateSwarmInfo(self):
@@ -327,6 +355,10 @@ class MpTestWidget(QWidget):
         self.robot_table.setItem(platform_id-1, 4, QTableWidgetItem(str(robot_state.actuator_state.data)))
         self.robot_table.setItem(platform_id-1, 5, QTableWidgetItem(str(robot_state.network_connection.data)))
 
+        if platform_id in self.robot_table_color:
+            for i in range(self.robot_table.columnCount()):
+                self.robot_table.item(platform_id-1,i).setBackground(self.robot_table_color[platform_id])
+
     # 그룹 정보 상태 정보 탭 업데이트
     def GroupStatusUpdateTab(self, group):
         x,y = 0,0
@@ -337,10 +369,13 @@ class MpTestWidget(QWidget):
         group_member = []
         for robot_state in group.platforms_state:
             if group.leader_id == robot_state.platform_id:
-                self.UpdateRobotIdType(robot_state)
+                x,y = robot_state.robot_pose.position.x, robot_state.robot_pose.position.y
+                leader_id = self.UpdateRobotIdType(robot_state)
             else:
                 platform_id, robot_type= self.UpdateRobotIdType(robot_state)
                 group_member.append(platform_id)
+            # 그룹화된 로봇 정보 도시화 여부
+            # self.RobotStatusUpdateTab(robot_state)
 
         self.group_table.setItem(group_id-1, 0, QTableWidgetItem(str(group_id)))
         self.group_table.setItem(group_id-1, 1, QTableWidgetItem(str(leader_id)))
@@ -349,6 +384,14 @@ class MpTestWidget(QWidget):
         self.group_table.setItem(group_id-1, 3, QTableWidgetItem(str(current_task)))
         self.group_table.setItem(group_id-1, 4, QTableWidgetItem(str('임시 데이터')))
         self.group_table.setItem(group_id-1, 5, QTableWidgetItem(str(group_member)))
+
+        # if platform_id in self.dynamic_robot_plan_color:
+        #     for i in range(self.dynamic_robot_plan_table.columnCount()):
+        #         self.dynamic_robot_plan_table.item(platform_id-1,i).setBackground(self.dynamic_robot_plan_color[platform_id])
+
+        # if group_id in self.dynamic_group_plan_color:
+        #     for i in range(self.dynamic_group_plan_table.columnCount()):
+        #         self.dynamic_robot_plan_table.item(group_id-1,i).setBackground(self.dynamic_group_plan_color[group_id])
 
     # 로봇 ID 최댓값 찾기
     def FindMaxRobotID(self,robot_id):
@@ -400,11 +443,38 @@ class MpTestWidget(QWidget):
             return "통신 거리"
         elif param_name=="communication_power":
             return "통신 세기"
+        elif param_name=="moving_able":
+            return "이동 가능성"
+        elif param_name=="task_runnig_time":
+            return "과업 수행 시간"
+        elif param_name=="task_progress":
+            return "과업 진척도"
         else:
-            return "없는 과업"
+            return "없는 파라미터"
+
+    def RobotTableBackGroundAllWhite(self):
+        if self.robot_table_color:
+            for key, value in self.robot_table_color.items():
+                self.robot_table_color[key] = QColor(255,255,255)
+
+    def RobotPoseBackGroundAllBlack(self):
+        for key, value in self.current_plot.items():
+            self.current_plot[key].get_bbox_patch().set_facecolor('black')
+
+    def TaskPoseReset(self):
+        for key, value in self.task_plot.items():
+            self.task_plot[key].set_position((-10000,-10000))
 
     def OnTasksTableRowClicked(self, row, col):
         # clicked_data = self.tasks_table.item(row, 0).text()
+        self.RobotTableBackGroundAllWhite()
+        self.RobotPoseBackGroundAllBlack()
+        self.TaskPoseReset()
+        self.robot_plan_table.clear()
+        self.dynamic_robot_plan_table.clear()
+        self.dynamic_group_plan_table.clear()
+        robot_plan_table_name = ['로봇 ID', '성능값']
+        group_plan_table_name = ['그룹 ID', '리더 ID', '성능값']
         print(str(row) + " Row Clicked")
         if self.former_row is not None:
             self.tasks_table.item(self.former_row,0).setBackground(QColor(255,255,255))
@@ -423,5 +493,87 @@ class MpTestWidget(QWidget):
                     self.tasks_table.setItem(row,self.tasks_table.columnCount()-1,QTableWidgetItem(str(value)))
                     self.tasks_table.item(row,self.tasks_table.columnCount()-1).setBackground(QColor(255,192,203))
 
+            if self.mp_test_static["정적_과업_"+str(row)][2].groups.group_id in self.task_plot:
+                x = self.mp_test_static["정적_과업_"+str(row)][2].task[0].target_position[0].pose.position.x
+                y = self.mp_test_static["정적_과업_"+str(row)][2].task[0].target_position[0].pose.position.y
+                self.task_plot[self.mp_test_static["정적_과업_"+str(row)][2].groups.group_id].set_position((x,y))
+            else:
+                x = self.mp_test_static["정적_과업_"+str(row)][2].task[0].target_position[0].pose.position.x
+                y = self.mp_test_static["정적_과업_"+str(row)][2].task[0].target_position[0].pose.position.y
+                self.task_plot[self.mp_test_static["정적_과업_"+str(row)][2].groups.group_id] = self.ax.text(x, y, "X", color='green', ha='center', va='center', fontsize=15)
+
+            self.robot_plan_table.setRowCount(len(self.mp_test_static["정적_과업_"+str(row)][0]))
+            self.robot_plan_table.setColumnCount(2)
+            self.robot_plan_table.setHorizontalHeaderLabels(robot_plan_table_name)
+            rol = 0
+            for robot_perform_value in self.mp_test_static["정적_과업_"+str(row)][0]:
+                self.robot_plan_table.setItem(rol,0,QTableWidgetItem(str(robot_perform_value.robot_id%100)))
+                self.robot_plan_table.setItem(rol,1,QTableWidgetItem(str(robot_perform_value.performance_value)))
+                for i in range(len(self.mp_test_static["정적_과업_"+str(row)][2].groups.registrations)):
+                    if self.mp_test_static["정적_과업_"+str(row)][2].groups.registrations[i].platform_id == robot_perform_value.robot_id:
+                        for j in range(self.robot_plan_table.columnCount()):
+                            self.robot_plan_table.item(rol,j).setBackground(QColor(255,192,203))
+
+                        self.current_plot[robot_perform_value.robot_id%100].get_bbox_patch().set_facecolor('red')
+                        for i in range(self.robot_table.columnCount()):
+                            # self.robot_table.item(robot_peform_value.robot_id-1,i).setBackground(QColor(255,192,203))
+                            self.robot_table_color[robot_perform_value.robot_id%100] = QColor(255,192,203)
+                rol += 1
+
+
         elif "동적_과업_0" in self.mp_plan:
-            pass
+            for key, value in self.mp_plan["동적_과업_"+str(row)].items():
+                if key == '과업명' or key == 'group':
+                    continue
+                else:
+                    self.tasks_table.insertColumn(self.tasks_table.columnCount())
+                    self.tasks_table.setHorizontalHeaderItem(self.tasks_table.columnCount()-1,QTableWidgetItem(key))
+                    self.tasks_table.setItem(row,self.tasks_table.columnCount()-1,QTableWidgetItem(str(value)))
+                    self.tasks_table.item(row,self.tasks_table.columnCount()-1).setBackground(QColor(255,192,203))
+
+
+            # Task 위치 도시화
+            if self.mp_test_dynamic["동적_과업_"+str(row)][3].groups.group_id in self.task_plot:
+                x = self.mp_test_dynamic["동적_과업_"+str(row)][3].task[0].target_position[0].pose.position.x
+                y = self.mp_test_dynamic["동적_과업_"+str(row)][3].task[0].target_position[0].pose.position.y
+                self.task_plot[self.mp_test_dynamic["동적_과업_"+str(row)][3].groups.group_id].set_position((x,y))
+            else:
+                x = self.mp_test_dynamic["동적_과업_"+str(row)][3].task[0].target_position[0].pose.position.x
+                y = self.mp_test_dynamic["동적_과업_"+str(row)][3].task[0].target_position[0].pose.position.y
+                self.task_plot[self.mp_test_dynamic["동적_과업_"+str(row)][3].groups.group_id] = self.ax.text(x, y, "X", color='green', ha='center', va='center', fontsize=15)
+
+            self.dynamic_robot_plan_table.setRowCount(len(self.mp_test_dynamic["동적_과업_"+str(row)][1]))
+            self.dynamic_robot_plan_table.setColumnCount(2)
+            self.dynamic_robot_plan_table.setHorizontalHeaderLabels(robot_plan_table_name)
+            rol = 0
+            for robot_perform_value in self.mp_test_dynamic["동적_과업_"+str(row)][1]:
+                self.dynamic_robot_plan_table.setItem(rol,0,QTableWidgetItem(str(robot_perform_value.robot_id%100)))
+                self.dynamic_robot_plan_table.setItem(rol,1,QTableWidgetItem(str(robot_perform_value.performance_value)))
+                for group in self.mp_test_dynamic["동적_과업_"+str(row)][0]:
+                    for i in range(len(group.registrations)):
+                        if group.registrations[i].platform_id == robot_perform_value.robot_id:
+                            for j in range(self.dynamic_robot_plan_table.columnCount()):
+                                self.dynamic_robot_plan_table.item(rol,j).setBackground(QColor(255,192,203))
+                            self.current_plot[robot_perform_value.robot_id%100].get_bbox_patch().set_facecolor('red')
+                            for i in range(self.dynamic_robot_plan_table.columnCount()):
+                                # self.robot_table.item(robot_peform_value.robot_id-1,i).setBackground(QColor(255,192,203))
+                                self.dynamic_robot_plan_color[robot_perform_value.robot_id%100] = QColor(255,192,203)
+                rol += 1
+
+            self.dynamic_group_plan_table.setRowCount(len(self.mp_test_dynamic["동적_과업_"+str(row)][1]))
+            self.dynamic_group_plan_table.setColumnCount(3)
+            self.dynamic_group_plan_table.setHorizontalHeaderLabels(group_plan_table_name)
+            rol = 0
+            for group_perform_value in self.mp_test_dynamic["동적_과업_"+str(row)][0]:
+                self.dynamic_group_plan_table.setItem(rol,0,QTableWidgetItem(str(group_perform_value.group_id)))
+                self.dynamic_group_plan_table.setItem(rol,1,QTableWidgetItem(str(group_perform_value.leader_id)))
+                self.dynamic_group_plan_table.setItem(rol,2,QTableWidgetItem(str(group_perform_value.performance_value)))
+                for i in range(len(self.mp_test_dynamic["동적_과업_"+str(row)][3].groups.registrations)):
+                    if self.mp_test_dynamic["동적_과업_"+str(row)][3].groups.group_id == group_perform_value.group_id:
+                        for j in range(self.dynamic_group_plan_table.columnCount()):
+                            self.dynamic_group_plan_table.item(rol,j).setBackground(QColor(255,192,203))
+                        self.current_plot[group_perform_value.leader_id%100].get_bbox_patch().set_facecolor('red')
+                        for i in range(self.dynamic_robot_plan_table.columnCount()):
+                            # self.robot_table.item(robot_peform_value.robot_id-1,i).setBackground(QColor(255,192,203))
+                            self.dynamic_group_plan_color[group_perform_value.group_id] = QColor(255,192,203)
+                rol += 1

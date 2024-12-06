@@ -23,7 +23,7 @@
     </rect>
    </property>
    <property name="currentIndex">
-    <number>1</number>
+    <number>0</number>
    </property>
    <widget class="QWidget" name="robot_info_tab">
     <attribute name="title">
@@ -66,7 +66,7 @@
     </rect>
    </property>
    <property name="currentIndex">
-    <number>2</number>
+    <number>1</number>
    </property>
    <widget class="QWidget" name="flowchart_tab">
     <attribute name="title">
@@ -92,7 +92,7 @@
     <attribute name="title">
      <string>동적임무계획</string>
     </attribute>
-    <widget class="QTabWidget" name="robot_group_1">
+    <widget class="QTabWidget" name="robot_group">
      <property name="geometry">
       <rect>
        <x>0</x>
@@ -104,11 +104,11 @@
      <property name="currentIndex">
       <number>1</number>
      </property>
-     <widget class="QWidget" name="dynamic_robot_mp_1">
+     <widget class="QWidget" name="dynamic_robot_mp">
       <attribute name="title">
        <string>예비대 성능값</string>
       </attribute>
-      <widget class="QTableWidget" name="robot_plan_table_1">
+      <widget class="QTableWidget" name="dynamic_robot_plan_table">
        <property name="geometry">
         <rect>
          <x>0</x>
@@ -119,11 +119,11 @@
        </property>
       </widget>
      </widget>
-     <widget class="QWidget" name="dynamic_group_mp_1">
+     <widget class="QWidget" name="dynamic_group_mp">
       <attribute name="title">
        <string>그룹 성능값</string>
       </attribute>
-      <widget class="QTableWidget" name="group_plan_table_1">
+      <widget class="QTableWidget" name="dynamic_group_plan_table">
        <property name="geometry">
         <rect>
          <x>0</x>
