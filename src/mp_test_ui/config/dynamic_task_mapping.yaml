@@ -2,8 +2,8 @@
 maneuver_performance:
   # 평균 속도
   mean_ground_velocity: 0.7
-  # 벽 부착 여부
-  wall_stick: 0
+  # # 벽 부착 여부
+  # wall_stick: 0
 
 # 작전 지속 성능 파라미터
 operation_persistence_performance:
@@ -19,4 +19,3 @@ observation_recon:
   # 구성원 개수
   member_num: 0.6
 
-  

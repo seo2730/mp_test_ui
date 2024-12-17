@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1910</width>
+    <width>1878</width>
     <height>1064</height>
    </rect>
   </property>
@@ -16,14 +16,14 @@
   <widget class="QTabWidget" name="swarm_info_tab">
    <property name="geometry">
     <rect>
-     <x>870</x>
+     <x>640</x>
      <y>140</y>
-     <width>421</width>
+     <width>481</width>
      <height>881</height>
     </rect>
    </property>
    <property name="currentIndex">
-    <number>0</number>
+    <number>1</number>
    </property>
    <widget class="QWidget" name="robot_info_tab">
     <attribute name="title">
@@ -34,7 +34,7 @@
       <rect>
        <x>0</x>
        <y>0</y>
-       <width>421</width>
+       <width>481</width>
        <height>851</height>
       </rect>
      </property>
@@ -49,7 +49,7 @@
       <rect>
        <x>0</x>
        <y>0</y>
-       <width>421</width>
+       <width>481</width>
        <height>851</height>
       </rect>
      </property>
@@ -59,14 +59,14 @@
   <widget class="QTabWidget" name="mp_info_tab">
    <property name="geometry">
     <rect>
-     <x>1300</x>
+     <x>1130</x>
      <y>140</y>
-     <width>571</width>
+     <width>741</width>
      <height>881</height>
     </rect>
    </property>
    <property name="currentIndex">
-    <number>1</number>
+    <number>2</number>
    </property>
    <widget class="QWidget" name="flowchart_tab">
     <attribute name="title">
@@ -82,7 +82,7 @@
       <rect>
        <x>0</x>
        <y>0</y>
-       <width>571</width>
+       <width>741</width>
        <height>851</height>
       </rect>
      </property>
@@ -97,7 +97,7 @@
       <rect>
        <x>0</x>
        <y>0</y>
-       <width>571</width>
+       <width>741</width>
        <height>821</height>
       </rect>
      </property>
@@ -113,7 +113,7 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>561</width>
+         <width>741</width>
          <height>791</height>
         </rect>
        </property>
@@ -128,7 +128,7 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>561</width>
+         <width>741</width>
          <height>791</height>
         </rect>
        </property>
@@ -141,9 +141,9 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>10</y>
-     <width>851</width>
-     <height>1011</height>
+     <y>80</y>
+     <width>611</width>
+     <height>941</height>
     </rect>
    </property>
    <layout class="QVBoxLayout" name="plotLayout"/>
@@ -151,10 +151,79 @@
   <widget class="QTableWidget" name="tasks_table">
    <property name="geometry">
     <rect>
-     <x>875</x>
+     <x>645</x>
      <y>10</y>
-     <width>991</width>
+     <width>1221</width>
      <height>121</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label">
+   <property name="geometry">
+    <rect>
+     <x>180</x>
+     <y>10</y>
+     <width>67</width>
+     <height>17</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>임무 범위</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_2">
+   <property name="geometry">
+    <rect>
+     <x>340</x>
+     <y>10</y>
+     <width>101</width>
+     <height>17</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>할당 수행 시간</string>
+   </property>
+  </widget>
+  <widget class="QTextBrowser" name="mp_rect_browser">
+   <property name="geometry">
+    <rect>
+     <x>180</x>
+     <y>40</y>
+     <width>141</width>
+     <height>31</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QTextBrowser" name="mp_time_browser">
+   <property name="geometry">
+    <rect>
+     <x>340</x>
+     <y>40</y>
+     <width>281</width>
+     <height>31</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_3">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>10</y>
+     <width>67</width>
+     <height>17</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>임무</string>
+   </property>
+  </widget>
+  <widget class="QTextBrowser" name="mp_name_browser">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>40</y>
+     <width>141</width>
+     <height>31</height>
     </rect>
    </property>
   </widget>
